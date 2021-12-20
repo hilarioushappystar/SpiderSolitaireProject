@@ -65,6 +65,16 @@ class Card():
         number = dweet[self.suit] * 13 + self.rank - 1
         return number
     
+    def card2color(self):
+        #return 'black'
+        if( self.isvisible == False ):
+            return 'gray'
+        
+        temp = {'c' : 'green', 'd' : 'blue', 'h' : 'red', 's' : 'black'}
+        if( self.suit in temp):
+            return temp[self.suit]
+        return 'black'
+        
     # convert number between 0 and 51 to a card
     @staticmethod
     def id2card(myid):
