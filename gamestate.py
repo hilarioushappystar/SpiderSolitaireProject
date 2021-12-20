@@ -9,6 +9,7 @@
 from card import Card
 import random
 import numpy as np
+
 #random.seed(123456)
 
 
@@ -70,11 +71,15 @@ class Gamestate():
             if ( dweet != 2):
                 flag = True
         if(flag):
-            print("WARNING: NOT EVERY CARD APPEARS TWICE!!!")
-            print(str(cardcounts[0:13]) + '\n' + str(cardcounts[13:26]) +  '\n' + str( cardcounts[26:39]) + '\n' + str(cardcounts[39:52]))
+            tempstr = "WARNING: NOT EVERY CARD APPEARS TWICE!!!\n"
+            tempstr += str(cardcounts[0:13]) + '\n' + str(cardcounts[13:26]) +  '\n' + str( cardcounts[26:39]) + '\n' + str(cardcounts[39:52])
+            #print("WARNING: NOT EVERY CARD APPEARS TWICE!!!")
+            #print(str(cardcounts[0:13]) + '\n' + str(cardcounts[13:26]) +  '\n' + str( cardcounts[26:39]) + '\n' + str(cardcounts[39:52]))
+            #return "WARNING: NOT EVERY CARD APPEARS TWICE!!!"
+            return tempstr
         else:
-            print("CORRECT DISTRIBUTION")
-            
+            #print("CORRECT DISTRIBUTION")
+            return "CORRECT DISTRIBUTION"
     # find the maximum cards in a column that can move to an empty column (assuming the latter exists)
     def runlength(self,column_id):
         column = self.columns[column_id]
@@ -179,7 +184,7 @@ class Gamestate():
     # execute move block. Moves are encoded as integers. Assume there are N legal moves then integer k
     # corresponds to the (k-modulo-N)th move
     def executemoveblock(self,moveblock,threshold,allowturnovers):
-        
+        movesplayed = []
         # if allowturnovers = True then stop making moves as soon as one card is turned over
         # if allowturnovers = False then don't expose a face-down card at the head of a column.                             
         # this avoids the AI cheating by knowing the identity of face-down cards when trying to find the best play.     
@@ -193,12 +198,14 @@ class Gamestate():
             if( len(templist) > 0):
                 mytuple = templist[myint % len(templist)]
                 self.makemove(mytuple[0], mytuple[1])
+                movesplayed.append(mytuple)
             else:
                 break
             if( allowturnovers):                
                 if( self.turnovercards() == True):
-                    return
+                    return movesplayed
         self.turnovercards()
+        return movesplayed
         
     # turn over face-down cards that are head of a column.
     # return true if at least one card turned over
@@ -215,7 +222,7 @@ class Gamestate():
                       
     # evaluate how good a position is
     def evaluateposition(self):        
-        myeval = 1000 * self.countsuitsremoved() + self.countsuitedbuilds() + 10*(44 - self.counthiddencards())
+        myeval = 100 * self.countsuitsremoved() + self.countsuitedbuilds() + 10*(44 - self.counthiddencards())
         return myeval
             
     # assume move is legal
@@ -316,4 +323,19 @@ class Gamestate():
                         f.write(c.card2string() + ' ')
                     f.write('\n')
 
- 
+    # print the current game state into a data format that can be read by canvas
+    def printstate_canvas(self):
+        data = []
+        for i in range(10):
+            for j in range(len(self.columns[i])):
+                tempcard = self.columns[i][j]
+                datum = [50 + 30*j, 100 + 15*i, tempcard.card2string(), tempcard.card2color()]
+                data.append(datum)
+        for i in range(10):
+            for j in range(len(self.stock[i])):
+                tempcard = self.stock[i][j]
+                datum = [50 + 30*j, 300 + 15*i, tempcard.card2string(), tempcard.card2color()]
+                data.append(datum)
+                
+                
+        return data        
