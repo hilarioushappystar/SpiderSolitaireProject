@@ -42,15 +42,6 @@ IMPORTANT: The Gamestate class records the rank/suit of both visible and non-vis
 use information from visible cards when determining the best move(s).
 
 
-Generate_random_startposition: This generates a random valid starting position (valid means every card
-appears exactly twice, each column contains the correct number of cards and only 10 cards are visible etc).
-
-NOTE: if you wanna generate a start position with known arrangement of face-down cards, simply generate a random
-position to get the "correct format", then edit each card to have the correct suit and rank.
-
-Calculate_equity: This estimates the equity (i.e. probability of winning) by repeatedly playing the same hand
-and computing the ratio "number of wins" : "number of games".
-
 The algorithm for playing one iteration of a starting hand is as follows: 
 
 LOOP
@@ -84,14 +75,12 @@ allow breaking in-suit only succeed in trashing the win rate.
 
 ## USAGE:
 
-To generate a random position and calculate its equity with 30 iterations of that hand.
-(1) python generate_random_position foo.txt
-(2) python calculate_equity.py foo.txt 30
+Start with the command:
+> python driver.py
 
-To generate a specific position and calculate its equity with 30 iterations of that hand
-(1) python generate_random_position foo.txt
-(2) edit the text file manually
-(3) python calculate_equity.py foo.txt 30
+Next initialise with a random file or an existing file (e.g. example.txt)
+
+Click on single moveblock to "step through" the hand, or all moveblocks to play the entire hand.
 
 NOTE: it is not possible to calculate the equity of a hand with only the identity of the 10 face-up cards known.
 
