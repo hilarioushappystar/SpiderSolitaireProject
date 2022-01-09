@@ -6,13 +6,15 @@ from gamestate import Gamestate
 import copy
 import numpy as np
 import time 
-import random
+#import random
 from card import Card
+import ai_module
+from config_handler import ConfigHandler
 
 class UI:
     def __init__(self, parent):
         
-        parent.title('Spider Solitaire AI (sans undo)')
+        parent.title('Spider Solitaire AI ATTEMPT 20220107 (sans undo)')
         parent.geometry('1000x500')
         frame = tk.Frame(parent)
         frame.pack()
@@ -22,6 +24,14 @@ class UI:
         self.canvas.create_window(100, 30, window=self.name_label)
         self.entry1 = tk.Entry(parent) 
         self.canvas.create_window(200, 30, window=self.entry1)
+
+        # new!
+        self.seed_label = tk.Label(parent, text = 'Seed #', font=('calibre',10, 'bold'))
+        self.canvas.create_window(100, 60, window=self.seed_label)
+        self.entry2 = tk.Entry(parent) 
+        self.canvas.create_window(200, 60, window=self.entry2)
+
+
 
         self.canvas.pack()
         self.button1 = tk.Button(frame,
@@ -34,7 +44,7 @@ class UI:
         self.button2.pack(side=tk.LEFT)
         self.button3 = tk.Button(frame,
                    text="single moveblock",
-                   command=self.execute_moveblock)
+                   command=self.choose_moveblock)
         self.button3.pack(side=tk.LEFT)
         self.button3['state'] = tk.DISABLED 
         self.button4 = tk.Button(frame,
@@ -50,8 +60,11 @@ class UI:
                    command=quit)
         self.button5.pack(side=tk.LEFT)
 
-    def set_gamestate(self):
-        
+        # automatically read in config file
+        self.cfgh = ConfigHandler()
+        self.cfgh.init_config('config.txt')
+
+    def set_gamestate(self):        
         self.gs = Gamestate()
         mystr = self.entry1.get()    
         try:
@@ -69,62 +82,38 @@ class UI:
 
 
     def set_gamestate_random(self):
+        myseed = self.entry2.get()
         self.gs = Gamestate()
-        self.gs.init_random()
+        self.gs.init_random(self.cfgh, myseed)
         self.canvas.delete("some_tag")
         data = self.gs.printstate_canvas()
         for datum in data:
             self.canvas.create_text(datum[0],datum[1],text=datum[2],fill=datum[3],font="Courier 10",tag="some_tag")
         self.button3['state']=tk.NORMAL; self.button4['state']=tk.NORMAL
  
-    def execute_moveblock(self):
-        game_result = 'STILLGOING'
-    
-        prev_eval = self.gs.evaluateposition()
-        numtries = 100
-        threshold_param = 2
-        bestsofar_moveblock = []
-        bestsofar_eval = self.gs.evaluateposition()
-                    
-        # find the best sequence of moves
-        for mytry in range(numtries):
-            moveblock = np.random.randint(1000,size=30)
-            gs2 = copy.deepcopy(self.gs)
-            gs2.executemoveblock(moveblock,threshold_param,False)
-            if( gs2.evaluateposition() > bestsofar_eval):
-                bestsofar_eval = gs2.evaluateposition()
-                bestsofar_moveblock = moveblock
-        # now execute the best sequence of moves
-        movesequence = self.gs.executemoveblock(bestsofar_moveblock,threshold_param,True)
-        
-        if( self.gs.evaluateposition() <= prev_eval):
-            if( len( self.gs.stock[0]) > 0):
-                self.gs.dealrow()
-            else:
-                if self.gs.iswon():
-                    game_result = 'RESULT = WIN'
-                else:
-                    game_result = 'RESULT = LOSE'
-            
-    # now print the stuff
+    # this means find the best moveblock and execute it
+    def choose_moveblock(self):
+        (movesequence,game_result) = ai_module.choose_moveblock(self.gs, self.cfgh)
+        # now print the stuff
         self.canvas.delete("some_tag")
         data = self.gs.printstate_canvas()
         for datum in data:
             self.canvas.create_text(datum[0],datum[1],text=datum[2],fill=datum[3],font="Courier 10",tag="some_tag")
         if( game_result == 'STILLGOING'):
             self.canvas.create_text(500,300,text='Last Moveblock = ' +self.moveblock2str(movesequence),fill='black',font='Times 12',tag="some_tag")
-            self.canvas.create_text(500,350,text='Evaluation = ' + str(self.gs.evaluateposition()), fill='black',font='Times 12',tag="some_tag")
+            tempstr = ai_module.evaluate_position(self.gs, self.cfgh)
+            self.canvas.create_text(500,350,text='Evaluation = ' + str(tempstr), fill='black',font='Times 12',tag="some_tag")
+        
         else:
             self.canvas.create_text(400,300,text=game_result,fill='black',font='Times 20',tag="some_tag")
         return game_result 
-        
-        
+                
     def execute_every_moveblock(self):
         for dweet in [self.button1, self.button2, self.button3, self.button4]:
             dweet['state'] = tk.DISABLED 
-        game_result = self.execute_moveblock()
+        game_result = self.choose_moveblock()
         if( game_result == 'STILLGOING'):
-            self.canvas.after(1000, self.execute_every_moveblock)
+            self.canvas.after(200, self.execute_every_moveblock)
         else:
             for dweet in [self.button1, self.button2, self.button3, self.button4]:
                 dweet['state'] = tk.NORMAL 
@@ -133,7 +122,7 @@ class UI:
             for datum in data:
                 self.canvas.create_text(datum[0],datum[1],text=datum[2],fill=datum[3],font="Courier 10",tag="some_tag")
             self.canvas.create_text(400,300,text=game_result,fill='black',font='Times 20',tag="some_tag")
-            
+            self.canvas.create_text(430,400,text='# hidden cards = ' + str(self.gs.counthiddencards()),fill='black',font='Times 20',tag="some_tag")
     # convert a moveblock to string for ease of reading 
     def moveblock2str(self, moveblock):
         if( len(moveblock) < 10):
