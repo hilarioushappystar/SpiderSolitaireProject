@@ -1,0 +1,20 @@
+-2s -8h -5d -Kd -Qc 6s
+-Ks -8c -8h -7d -6h Qs
+-9d -Jh -8c -Qh -4d 8s
+-5c -9h -As -2s -3s Qd
+-6c -4h -0c -7h Jd
+-6s -0h -3c -Qs 3h
+-0c -5h -Qd -7c Qh
+-2c -5s -9h -Kc Qc
+-6d -8d -0d -Jh 3d
+-Ad -Ah -4s -7h Kd
+Jd 6c 2d Js Ks
+As 7s 0h 8d 4d
+0s 7d 8s Ac 7s
+3c 5c 9s Jc Kc
+4s Ah Jc 5d 2h
+9c 4c 6d 2d Ad
+Ac 6h 9d 5s Kh
+2c 0s 3d Js 4c
+9s Kh 7c 9c 3h
+2h 3s 5h 0d 4h
